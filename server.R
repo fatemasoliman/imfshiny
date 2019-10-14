@@ -7,8 +7,31 @@ library(shiny)
 library(googleVis)
 library(RColorBrewer)
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
+    observe({
+      
+      # if (is.null(input$countrybop))
+      #   input$countrybop <- character(0)
+      
+    arrtypebop = grabycountry %>% filter(Country.Name == input$countrybop) %>% select(Arrangement.Type)
+    
+    if(length(arrtypebop)==1){
+      arrtypebop = arrtypebop[[1]]
+    }
+    
+    updateCheckboxGroupInput(session = session, inputId = "arrtypebop",
+                         choices = unique(arrtypebop), 
+                       selected = arrtypebop[1])
+                         # selected = if_else(length(arrtypebop2) == 1, arrtypebop2[[1]], arrtypebop2[1]))
+                      })
+    # observe({
+    #   dest <- unique(flights[origin == input$origin, dest])
+    #   updateSelectizeInput(
+    #     session, "dest",
+    #     choices = dest,
+    #     selected = dest[1])
+    # })
   # output$arrtypesnbar <- renderPlotly({
   #   
   #   p = arrangementsbytype %>% filter(arrTypeGroup %in% c(input$arrtype)) %>% ggplot() +
@@ -111,14 +134,38 @@ shinyServer(function(input, output) {
 
   output$bop = renderPlotly({
     
+    yrs = unlist(grabycountry %>% 
+                   filter(Country.Name %in% c(input$countrybop), 
+                          Arrangement.Type %in% c(input$arrtypebop)) %>% select(Inipgmyr))
+    
+    countries = unlist(grabycountry %>%
+                         filter(Country.Name %in% c(input$countrybop), 
+                                Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                         select(Country.Name))
+    
+    yrs_end = unlist(grabycountry %>%
+                       filter(Country.Name %in% c(input$countrybop), 
+                              Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                       select(Initial.End.Year))
+    
+    vlines_start = data.frame(xint = c(yrs), grp = c(countries), xintend = c(yrs_end))
+    
     e =  cab %>% filter(Country.Name %in% c(input$countrybop)) %>%
-      ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
-      geom_line() +
+      ggplot(aes(
+        x = year,
+        y = bop)) +
+      geom_line(color = "deepskyblue3") +
       labs(x = "Year", y = "BoP (% of GDP)") +
-      theme_classic() 
-      
-    ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+      theme_classic() +
+      geom_vline(data = vlines_start,aes(xintercept = xint),colour = "forestgreen", linetype = "dashed") 
+
+    ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2),
+                                              xaxis = list(
+                                                dtick = 2,
+                                                tickmode = "linear"))
+
   })
   
   
-})
+  })
+  

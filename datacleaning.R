@@ -68,3 +68,15 @@ cab %>%
 
 
 
+
+cab %>% filter(Country.Name %in% c("AFGHANISTAN", "EGYPT")) %>%
+  ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
+  geom_line() +
+  labs(x = "Year", y = "BoP (% of GDP)") +
+  theme_classic() +
+  geom_vline(xintercept = unlist(arrbycountry2 %>% 
+             filter(Country.Name %in% c("AFGHANISTAN", "EGYPT")) %>% select(Inipgmyr))
+               )
+
+ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+

@@ -28,13 +28,17 @@ totarrangements = arrangementsbytype %>%
   group_by(Approval.Year, arrTypeGroup) %>% summarise(tot = sum(tot),
                                                       totalaccessamount = sum(totalaccessamount))
 grabycountry = descriptions %>% 
-  select(Country.Name, Approval.Date, Approval.Year, arrTypeGroup, Totalaccess, Arrangement.Type) %>% 
+  select(Country.Name, Approval.Date, Approval.Year, Inipgmyr, arrTypeGroup, Totalaccess, Arrangement.Type, Initial.End.Year) %>% 
   filter(arrTypeGroup == "General Resources Account (GRA)")
 
 
 arrbycountry = descriptions %>% 
   select(Country.Name, Approval.Date, Approval.Year, arrTypeGroup, Totalaccess, Arrangement.Type)
 
-cabimfcountries = inner_join(descriptions, cab, by = "Country.Name")
+cabimfcountries = inner_join(grabycountry, cab, by = "Country.Name")
 cabimfcountries = unique(cabimfcountries%>% select(Country.Name))
+
+arrbycountry2 = descriptions %>% 
+  select(Country.Name, Inipgmyr, arrTypeGroup, Totalaccess)
+head(arrbycountry2)
 

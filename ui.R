@@ -85,11 +85,16 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                selectInput(
                  inputId = 'countrybop',
                  label = "Select Countries",
-                choices = cabimfcountries$Country.Name,
-                selected = c("AFGHANISTAN", "MEXICO", "COLOMBIA", "EGYPT"),
-                multiple = TRUE
-               )
-             ),
+                choices = c(unique(grabycountry$Country.Name))
+               # selected = "COLOMBIA"
+                # multiple = TRUE
+               ),
+               checkboxGroupInput(
+                 inputId = "arrtypebop",
+                 label = h4("Arrangement Type"),
+                choices = unique(grabycountry %>% select(Arrangement.Type))
+                 # multiple = TRUE
+             )),
              mainPanel(plotlyOutput("bop"))))
            
            )
