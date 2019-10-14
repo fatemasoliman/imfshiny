@@ -90,7 +90,6 @@ shinyServer(function(input, output) {
       theme_classic() + 
       scale_x_discrete(breaks=c(paste("01/01/", c(2000:2019), sep ='')),
                                          labels=c(2000:2019)) + theme(legend.position = "none")
-
     ggplotly(c, tooltip = "text")
 
 
@@ -105,14 +104,20 @@ shinyServer(function(input, output) {
       geom_jitter(aes(x = nloans, y= totacc,color = Arrangement.Type,
                      text = paste(Country.Name))) +
       labs(x = "Number of Loans", y = "Total Access Amounts (mn SDR)") +
-      theme_classic()
-      
+      theme_classic() 
     ggplotly(d, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
-
-
   })
 
-
+  output$bop = renderPlotly({
+    
+    e =  cab %>% filter(Country.Name %in% c(input$countrybop)) %>%
+      ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
+      geom_line()
+      labs(x = "Year", y = "BoP (% of GDP)") +
+      theme_classic() 
+      
+    ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+  })
   
   
 })

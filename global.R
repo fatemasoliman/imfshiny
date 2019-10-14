@@ -9,6 +9,7 @@ library(shiny)
 
 
 descriptions = read.csv('./descriptions_clean.csv', stringsAsFactors = F)
+cab = read.csv('./cab_clean.csv', stringsAsFactors = F)
 
 descriptions = descriptions %>% mutate(Region.Code = case_when(Region.Code == 2 ~ '002',
                                Region.Code== 19 ~ '019', 
@@ -16,7 +17,8 @@ descriptions = descriptions %>% mutate(Region.Code = case_when(Region.Code == 2 
                                Region.Code == 13~ '013',
                                Region.Code == 3~ '003',
                                Region.Code == 005~ '005',
-                               TRUE ~ as.character(Region.Code))) 
+                               TRUE ~ as.character(Region.Code)), 
+                               Country.Name = toupper(Country.Name)) 
 
 
 arrangementsbytype = descriptions %>%
@@ -31,4 +33,9 @@ grabycountry = descriptions %>%
   filter(arrTypeGroup == "General Resources Account (GRA)")
 
 
+arrbycountry = descriptions %>% 
+  select(Country.Name, Approval.Date, Approval.Year, arrTypeGroup, Totalaccess, Arrangement.Type)
+
+cabimfcountries = inner_join(descriptions, cab, by = "Country.Name")
+cabimfcountries = unique(cabimfcountries%>% select(Country.Name))
 

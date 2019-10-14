@@ -13,7 +13,7 @@ regionlookup = regionlookup %>% select(Region.Code, Region.Name, Country.or.Area
                                  Region.Code == 3~ '003',
                                  Region.Code == 005~ '005',
                                  TRUE ~ as.character(Region.Code))) %>% 
-  rename('Country.Name' = Country.or.Area)
+  rename('Country.Name' = Country.or.Area) %>% mutate(Country.Name = toupper(Country.Name))
 
 
 
@@ -33,22 +33,12 @@ descriptions = descriptionraw %>%
       Arrangement.Type == 'PCI' ~ "Policy Coordination Instrument (PCI)")) %>% 
   filter(Review.Type == 'R0') %>% 
   mutate(Country.Name = gsub(",.*",'', Country.Name), 
-         Country.Name = str_to_title(Country.Name))
+         Country.Name = trimws(str_to_title(Country.Name)))
 
-descriptions = left_join(descriptions, regionlookup, by="Country.Name") %>% 
-  mutate()
+descriptions = left_join(descriptions, regionlookup, by="Country.Name")
 
 write.csv(descriptions, "./descriptions_clean.csv")
 
-grabycountry = descriptions %>% 
-  select(Country.Name, Approval.Date, Approval.Year, arrTypeGroup, Totalaccess, Arrangement.Type) 
-
-
-head(grabycountry)
-
-
-ggplot(grabycountry, aes(x=Totalaccess)) + geom_density()
-ggplot(grabycountry, aes(x=Totalaccess)) + geom_histogram(bins = 40)
 
 
 ##############BALANCE OF PAYMENTS DATA FROM WORLD BANK#####################
@@ -56,20 +46,24 @@ cab = read.csv('./cab.csv', stringsAsFactors = FALSE)
 cab = cab %>% select(Country.Name, Country.Code, contains('X'))
 colnames(cab) = gsub(pattern = 'X', replacement = "", colnames(cab))
 cab = melt(cab) %>% rename('year' = variable, 'bop' = value) 
-head(cab)
 cab = cab %>%  filter(!is.na(bop))
-cab = cab %>%  mutate(Country.Name = gsub(",.*",'', Country.Name))
-cab %>% 
-  filter(Country.Name %in% c("Algeria", "Egypt", "Mexico")) %>% 
-  ggplot() + geom_smooth(aes(x = year, y = bop, fill = Country.Name), stat = "identity", position = 'dodge')
+cab$year = as.numeric(as.character(cab$year))
+cab = cab %>%  
+  mutate(Country.Name = gsub(",.*",'', Country.Name), 
+         Country.Name = gsub("Cabo Verde", "CAPE VERDE", Country.Name),
+         Country.Name = toupper(Country.Name)) %>% 
+  filter(year > 1999)
+
+
+write.csv(cab, "./cab_clean.csv")
+
+#########
+
 
 cab %>% 
-  filter(Country.Name %in% c("Algeria", "Egypt")) %>%  ggplot() + 
-  geom_bar(aes(x = year, y = bop, fill = Country.Name), stat = "identity")
-
-
-
-unique(cab$Country.Name)
+  filter(Country.Name %in% c("Algeria", "Egypt")) %>%  
+  ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
+  geom_line()
 
 
 

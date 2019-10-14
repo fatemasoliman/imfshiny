@@ -78,6 +78,17 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                  min = 0, max = 63000, value = c(0,2000)
                )
              ),
-             mainPanel(plotlyOutput("scat1"), br(), br(), br(), br(), plotlyOutput("scat2"))))
+             mainPanel(plotlyOutput("scat1"), br(), br(), br(), br(), plotlyOutput("scat2")))),
+           
+           tabPanel("BoP", fluidPage(
+             sidebarPanel(
+               checkboxGroupInput(
+                 inputId = 'countrybop',
+                 label = "Select Countries",
+                choices = cabimfcountries$Country.Name,
+                selected = c("AFGHANISTAN", "MEXICO", "COLOMBIA", "EGYPT")
+               )
+             ),
+             mainPanel(plotlyOutput("bop"))))
            
            )
