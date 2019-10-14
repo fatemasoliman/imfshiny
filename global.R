@@ -17,8 +17,7 @@ descriptions = descriptions %>% mutate(Region.Code = case_when(Region.Code == 2 
                                Region.Code == 13~ '013',
                                Region.Code == 3~ '003',
                                Region.Code == 005~ '005',
-                               TRUE ~ as.character(Region.Code)), 
-                               Country.Name = toupper(Country.Name)) 
+                               TRUE ~ as.character(Region.Code))) 
 
 
 arrangementsbytype = descriptions %>%

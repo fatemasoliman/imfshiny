@@ -33,7 +33,8 @@ descriptions = descriptionraw %>%
       Arrangement.Type == 'PCI' ~ "Policy Coordination Instrument (PCI)")) %>% 
   filter(Review.Type == 'R0') %>% 
   mutate(Country.Name = gsub(",.*",'', Country.Name), 
-         Country.Name = trimws(str_to_title(Country.Name)))
+         Country.Name = trimws(str_to_title(Country.Name)), 
+         Country.Name = toupper(Country.Name))
 
 descriptions = left_join(descriptions, regionlookup, by="Country.Name")
 

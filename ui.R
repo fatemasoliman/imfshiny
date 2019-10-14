@@ -82,11 +82,12 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
            
            tabPanel("BoP", fluidPage(
              sidebarPanel(
-               checkboxGroupInput(
+               selectInput(
                  inputId = 'countrybop',
                  label = "Select Countries",
                 choices = cabimfcountries$Country.Name,
-                selected = c("AFGHANISTAN", "MEXICO", "COLOMBIA", "EGYPT")
+                selected = c("AFGHANISTAN", "MEXICO", "COLOMBIA", "EGYPT"),
+                multiple = TRUE
                )
              ),
              mainPanel(plotlyOutput("bop"))))

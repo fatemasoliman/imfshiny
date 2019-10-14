@@ -85,7 +85,8 @@ shinyServer(function(input, output) {
     c =  grabycountry %>%
       filter(Totalaccess >= input$totalccesslider[1] & Totalaccess<= input$totalccesslider[2]) %>%
       ggplot() +
-      geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = Arrangement.Type)) +
+      geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = Arrangement.Type, 
+                      text = paste(Country.Name))) +
       labs(x = "Approval Date", y = "Total Access Amounts (mn SDR)", color = "Arrangement Type") +
       theme_classic() + 
       scale_x_discrete(breaks=c(paste("01/01/", c(2000:2019), sep ='')),
@@ -112,7 +113,7 @@ shinyServer(function(input, output) {
     
     e =  cab %>% filter(Country.Name %in% c(input$countrybop)) %>%
       ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
-      geom_line()
+      geom_line() +
       labs(x = "Year", y = "BoP (% of GDP)") +
       theme_classic() 
       
