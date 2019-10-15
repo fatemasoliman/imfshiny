@@ -85,11 +85,3 @@ successtot = success  %>%
             "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt() %>% 
   rename("yearimpr" = variable, "n" = value) 
 
-
-#####
-success %>% ungroup() %>% filter(Region.Code == '002') %>% 
-  ungroup() %>% 
-  summarise("Year 1" = sum(n1), "Year 2"= sum(n2), 
-            "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt() %>% 
-  rename("yearimpr" = variable, "n" = value) 
-

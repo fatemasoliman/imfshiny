@@ -37,7 +37,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                  sidebarPanel(
                    checkboxGroupInput(
                      inputId = "arrtype",
-                     label = h4("Arrangement Type"),
+                     label = h4("Arrangement type"),
                      choices = c("Poverty Reduction and Growth Trust (PRGT)", "General Resources Account (GRA)",
                      "Policy Support Instrument (PSI) (non-monetary)" = "Policy Support Instrument (PSI)",
                      "Policy Coordination Instrument (PCI) (non-monetary)" = 
@@ -56,12 +56,12 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                      label = h4("Variable"),
                      choices = c(
                        "Number of arrangment approvals" = "tot",
-                       "Total Access Amounts" = "totalaccessamount"
+                       "Total access amounts" = "totalaccessamount"
                      )
                    ),
                    radioButtons(
                      inputId = "stackfill",
-                     label = h4("Stack or Fill?"),
+                     label = h4("Bar type"),
                      choices = c("stack", "fill"),
                      selected = "stack"
                      )
@@ -74,8 +74,8 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                radioButtons(
                  inputId = 'vartype3',
                  label = h4("Variable"),
-                 choices = c("Number of Loans",
-                             "Total Access Amount" = "Access Amount mnSDR")
+                 choices = c("Number of loans" = "Number of Loans",
+                             "Total access amount" = "Access Amount mnSDR")
                )
              ),
              mainPanel(htmlOutput("worldmap")))),
@@ -100,8 +100,8 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                    radioButtons(
                      inputId = 'vartype2',
                      label = h4("Variable"),
-                     choices = c("Number of Loans",
-                                 "Total Access Amount" = "Access Amount mnSDR")
+                     choices = c("Number of loans" = "Number of Loans",
+                                 "Total access amount" = "Access Amount mnSDR")
                    )
                  ),
                  mainPanel(htmlOutput("regionmap"))
@@ -112,7 +112,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
              sidebarPanel(
                sliderInput(
                  inputId = 'totalccesslider',
-                 label = h4("Total Access Amounts (mn SDR)"),
+                 label = h4("Total access amounts (mn SDR)"),
                  min = 0, max = 63000, value = c(0,2000)
                ),
                
@@ -136,14 +136,14 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
              sidebarPanel(
                selectInput(
                  inputId = 'countrybop',
-                 label = h4("Select Countries"),
+                 label = h4("Select countries"),
                 choices = c(unique(grabycountry$Country.Name)),
                selected = "COLOMBIA"
                 # multiple = TRUE
                ),
                checkboxGroupInput(
                  inputId = "arrtypebop",
-                 label = h4("Arrangement Type"),
+                 label = h4("Arrangement type"),
                 choices = unique(grabycountry %>% select(Arrangement.Type))
                  # multiple = TRUE
              )),
@@ -170,7 +170,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
              ),
              checkboxGroupInput(
                inputId = "gratype",
-               label = h4("GRA Type"),
+               label = h4("GRA type"),
                choices = c("EFF","SBA", "FCL", "ESF", "SBA-SCF","SBA-ESF","PLL", "PCL"),
                selected = c("EFF","SBA", "FCL", "ESF", "SBA-SCF","SBA-ESF","PLL", "PCL"))
              ),

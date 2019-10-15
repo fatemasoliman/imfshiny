@@ -11,9 +11,6 @@ shinyServer(function(input, output, session) {
   
     observe({
       
-      # if he(is.null(input$countrybop))
-      #   input$countrybop <- character(0)
-      
     arrtypebop = grabycountry %>% filter(Country.Name == input$countrybop) %>% select(Arrangement.Type)
     
     if(length(arrtypebop)==1){
@@ -23,35 +20,8 @@ shinyServer(function(input, output, session) {
     updateCheckboxGroupInput(session = session, inputId = "arrtypebop",
                          choices = unique(arrtypebop), 
                        selected = arrtypebop)
-                         # selected = if_else(length(arrtypebop2) == 1, arrtypebop2[[1]], arrtypebop2[1]))
                       })
-    # observe({
-    #   dest <- unique(flights[origin == input$origin, dest])
-    #   updateSelectizeInput(
-    #     session, "dest",
-    #     choices = dest,
-    #     selected = dest[1])
-    # })
-  # output$arrtypesnbar <- renderPlotly({
-  #   
-  #   p = arrangementsbytype %>% filter(arrTypeGroup %in% c(input$arrtype)) %>% ggplot() +
-  #     geom_bar(aes(x = Approval.Year, y = tot, fill = arrTypeGroup),
-  #              stat = "identity") +
-  #     xlab("Approval Year") + ylab("Number of Approved Arrangements") + theme_classic() +
-  #     theme(legend.position = "bottom") + scale_fill_brewer(palette = "Paired") +
-  #     labs(title = "Approved Arrangements by Year")
-  #   
-  #   ggplotly(p) %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
-  #   
-  # })
-  # output$arrtypesamountsbar <- renderPlotly({
-  #   arrangementsbytype %>% ggplot() +
-  #     geom_bar(aes(x = Approval.Year, y = totalaccessamount), fill = 'deepskyblue3', 
-  #              stat = "identity") +
-  #     xlab("Approval Year") + ylab("Total Access Amount (SDR)") + theme_classic() +
-  #     theme(legend.position = "bottom") + labs(title = "Total Access Amount of Approved Arrangements")
-  #   
-  # })
+
   
   output$totalbar <- renderPlotly({
    a =  arrangementsbytype %>%  rename("yvar" = input$graphtype) %>% 
@@ -89,19 +59,6 @@ shinyServer(function(input, output, session) {
   })
   
   
-  # 
-  # output$typepie <- renderPlotly({
-  #   c = arrangementsbytype %>% group_by(arrTypeGroup) %>% summarise(narr = n()) %>% 
-  #     ggplot() +
-  #     geom_bar(aes(x = factor(1), y = narr, fill = factor(arrTypeGroup)), width = 1, 
-  #               stat = "identity") 
-  #   c+ coord_polar(theta = "y")
-  #      # coord_polar(theta = "y")
-  #     # # geom_text(aes(y = arrTypeGroup, label = narr), color = "white")+
-  #     # scale_fill_brewer(palette = "Paired") +
-  #     # theme_classic()
-  # 
-  # })
 
   output$regionmap = renderGvis({
     gvisGeoChart(descriptions %>% group_by(Country.Name, Region.Code) %>% 
@@ -130,11 +87,16 @@ shinyServer(function(input, output, session) {
              Arrangement.Type %in% c(input$scatarrtype)) %>%
       ggplot() +
       geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = Arrangement.Type, 
-                      text = paste(Country.Name))) +
+                      text = paste(Country.Name, '<br>', "Date: ", Approval.Date))) +
       labs(x = "Approval Date", y = "Total Access Amounts (mn SDR)", color = "Arrangement Type") +
       theme_classic() + scale_color_brewer(palette = "Paired")+
-      scale_x_discrete(breaks=c(paste("01/01/", c(2000:2019), sep ='')),
-                                         labels=c(2000:2019)) + theme(legend.position = "none")
+      scale_x_discrete(breaks = c("1-Jan-00", "1-Jan-01", "1-Jan-02", "1-Jan-03", 
+                                  "1-Jan-04", "1-Jan-05", "1-Jan-06", "1-Jan-07", 
+                                  "1-Jan-08", "1-Jan-09", "1-Jan-10", 
+                                  "1-Jan-11", "1-Jan-12", "1-Jan-13", "1-Jan-14", 
+                                  "1-Jan-15", "1-Jan-16", "1-Jan-17", "1-Jan-18", "1-Jan-19"), 
+                       labels=c(2000:2019)) + theme(legend.position = "none")
+    
     ggplotly(c, tooltip = "text")
 
 
@@ -229,7 +191,7 @@ shinyServer(function(input, output, session) {
      geom_bar(aes(x = Arrangement.Type, y = value, fill = variable ), 
               stat = "identity", position = 'fill') + theme_classic() +
      scale_fill_brewer(palette = "Paired") + 
-     labs(x = "GRA Arrangement Type", y = "Success/Failure")
+     labs(x = "GRA Arrangement Type", y = "Proportion")
    
     
     ggplotly(succbar) %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4))
@@ -246,7 +208,7 @@ shinyServer(function(input, output, session) {
     succbar= bardata %>% ggplot() + geom_bar(aes(x = Region.Name, y = value, fill = variable ), 
                                              stat = "identity", position = 'fill') + theme_classic() +
       scale_fill_brewer(palette = "Paired") + labs(x = "Region", 
-                                                   y = "Success/Failure")
+                                                   y = "Proportion")
     
     
     ggplotly(succbar) %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4))
