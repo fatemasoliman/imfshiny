@@ -149,7 +149,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
              )),
              mainPanel(plotlyOutput("bop"),
                        br(), br(), 
-                       h4("The Balance of Payments (BoP) is an account of country's international transcations
+                       h4("The Balance of Payments (BoP) is an account of a country's international transcations
                           over a period of time. Countries seeking IMF aid are often experiencing large and deteriorting 
                           BoP deficits. An improvement in the BoP is the IMF's primary indicator of success.")))),
            
