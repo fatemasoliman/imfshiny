@@ -11,7 +11,7 @@ shinyServer(function(input, output, session) {
   
     observe({
       
-      # if (is.null(input$countrybop))
+      # if he(is.null(input$countrybop))
       #   input$countrybop <- character(0)
       
     arrtypebop = grabycountry %>% filter(Country.Name == input$countrybop) %>% select(Arrangement.Type)
@@ -22,7 +22,7 @@ shinyServer(function(input, output, session) {
     
     updateCheckboxGroupInput(session = session, inputId = "arrtypebop",
                          choices = unique(arrtypebop), 
-                       selected = arrtypebop[1])
+                       selected = arrtypebop)
                          # selected = if_else(length(arrtypebop2) == 1, arrtypebop2[[1]], arrtypebop2[1]))
                       })
     # observe({
@@ -60,15 +60,35 @@ shinyServer(function(input, output, session) {
                    y = yvar, fill = arrTypeGroup, 
                    text = paste('Year: ', Approval.Year,
                                        '<br>', yvar)), 
-               stat = "identity") + theme_classic() +
+               stat = "identity", position = (input$stackfill)) + theme_classic() +
       theme(legend.position = "bottom") + scale_fill_brewer(palette = "Paired") +
       labs(x = "Approval Year", 
            y = if_else(input$graphtype == "tot", "Number of Approved Arrangments", "Total Access Amount (mn SDR)"))
   
-   ggplotly(a, tooltip = "text") %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.2)) 
+   ggplotly(a, tooltip = "text") %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.4)) 
     
     
   })
+  
+  
+  output$regionbar <- renderPlotly({
+    r =  byregion %>% 
+      filter(arrTypeGroup%in%c(input$arrtype)) %>% 
+      group_by(Region.Name, Inipgmyr) %>% 
+      summarise(tot = sum(n), totalaccessamount = sum(Totalaccess)) %>% 
+      group_by(Region.Name) %>% rename("yvar" = input$graphtype) %>% 
+      ggplot() +geom_bar(aes(x = Inipgmyr, y = yvar, fill = Region.Name), 
+                         stat = "identity", position = (input$stackfill)) + 
+      theme_classic() +
+      theme(legend.position = "bottom") + scale_fill_brewer(palette = "Paired") +
+      labs(x = "Approval Year", 
+           y = if_else(input$graphtype == "tot", "Number of Approved Arrangments", "Total Access Amount (mn SDR)"))
+    
+    ggplotly(r, tooltip = "text") %>% layout(legend = list(orientation = "h", x = 0.4, y = -0.4)) 
+    
+  })
+  
+  
   # 
   # output$typepie <- renderPlotly({
   #   c = arrangementsbytype %>% group_by(arrTypeGroup) %>% summarise(narr = n()) %>% 
@@ -106,12 +126,13 @@ shinyServer(function(input, output, session) {
   output$scat1 = renderPlotly({
 
     c =  grabycountry %>%
-      filter(Totalaccess >= input$totalccesslider[1] & Totalaccess<= input$totalccesslider[2]) %>%
+      filter(Totalaccess >= input$totalccesslider[1] & Totalaccess<= input$totalccesslider[2], 
+             Arrangement.Type %in% c(input$scatarrtype)) %>%
       ggplot() +
       geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = Arrangement.Type, 
                       text = paste(Country.Name))) +
       labs(x = "Approval Date", y = "Total Access Amounts (mn SDR)", color = "Arrangement Type") +
-      theme_classic() + 
+      theme_classic() + scale_color_brewer(palette = "Paired")+
       scale_x_discrete(breaks=c(paste("01/01/", c(2000:2019), sep ='')),
                                          labels=c(2000:2019)) + theme(legend.position = "none")
     ggplotly(c, tooltip = "text")
@@ -123,13 +144,17 @@ shinyServer(function(input, output, session) {
 
     d =  grabycountry %>% group_by(Country.Name, Arrangement.Type) %>%
       summarise(nloans = n(), totacc = sum(Totalaccess)) %>%
-      filter(totacc >= input$totalccesslider[1] & totacc<= input$totalccesslider[2]) %>%
+      filter(totacc >= input$totalccesslider[1] & totacc<= input$totalccesslider[2], 
+             Arrangement.Type %in% c(input$scatarrtype)) %>%
       ggplot() +
       geom_jitter(aes(x = nloans, y= totacc,color = Arrangement.Type,
                      text = paste(Country.Name))) +
       labs(x = "Number of Loans", y = "Total Access Amounts (mn SDR)") +
-      theme_classic() 
-    ggplotly(d, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+      theme_classic() + scale_color_brewer(palette = "Paired")
+    ggplotly(d, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4), 
+                                              xaxis = list(
+                                                dtick = 1,
+                                                tickmode = "linear"))
   })
 
   output$bop = renderPlotly({
@@ -143,12 +168,22 @@ shinyServer(function(input, output, session) {
                                 Arrangement.Type %in% c(input$arrtypebop)) %>% 
                          select(Country.Name))
     
+    arrtypes = unlist(grabycountry %>%
+                        filter(Country.Name %in% c(input$countrybop), 
+                               Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                        select(Arrangement.Type))
+    
+    tam = unlist(grabycountry %>%
+                   filter(Country.Name %in% c(input$countrybop), 
+                          Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                   select(Totalaccess))
+      
     yrs_end = unlist(grabycountry %>%
                        filter(Country.Name %in% c(input$countrybop), 
                               Arrangement.Type %in% c(input$arrtypebop)) %>% 
                        select(Initial.End.Year))
     
-    vlines_start = data.frame(xint = c(yrs), grp = c(countries), xintend = c(yrs_end))
+    vlines_start = data.frame(xint = c(yrs), grp = c(countries), at = arrtypes, xintend = c(yrs_end), tam)
     
     e =  cab %>% filter(Country.Name %in% c(input$countrybop)) %>%
       ggplot(aes(
@@ -157,15 +192,66 @@ shinyServer(function(input, output, session) {
       geom_line(color = "deepskyblue3") +
       labs(x = "Year", y = "BoP (% of GDP)") +
       theme_classic() +
-      geom_vline(data = vlines_start,aes(xintercept = xint),colour = "forestgreen", linetype = "dashed") 
+      geom_vline(data = vlines_start,aes(xintercept = xint, color = at,
+                                         text = paste(tam, " mn SDR")), linetype = "dashed") +
+      scale_colour_brewer(palette = "Set1")
 
-    ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2),
+    ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4),
                                               xaxis = list(
                                                 dtick = 2,
                                                 tickmode = "linear"))
 
   })
   
-  
+  output$successpie = renderGvis({
+    
+    piedata = success %>% ungroup() %>% filter(Region.Code %in% input$regionpie, 
+                                               Arrangement.Type %in% input$gratype) %>% 
+      ungroup() %>% 
+      summarise("Year 1" = sum(n1), "Year 2"= sum(n2), 
+                "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt() %>% 
+      rename("yearimpr" = variable, "n" = value) 
+    
+    gvisPieChart(piedata, options = list(legend = "bottom", 
+                                         width = "600",
+                                         height = "600"))
+
   })
+  
+  output$successbar1 = renderPlotly({
+    bardata = success %>% filter(Region.Code %in% input$regionpie, 
+                                               Arrangement.Type %in% input$gratype) %>% 
+      group_by(Arrangement.Type) %>% 
+      summarise("Year 1" = sum(n1), "Year 2"= sum(n2), 
+                "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt()
+    
+   succbar= bardata %>% ggplot() + 
+     geom_bar(aes(x = Arrangement.Type, y = value, fill = variable ), 
+              stat = "identity", position = 'fill') + theme_classic() +
+     scale_fill_brewer(palette = "Paired") + 
+     labs(x = "GRA Arrangement Type", y = "Success/Failure")
+   
+    
+    ggplotly(succbar) %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4))
+    
+  })
+  
+  output$successbar2 = renderPlotly({
+    bardata = success %>% filter(Region.Code %in% input$regionpie, 
+                                 Arrangement.Type %in% input$gratype) %>%
+      group_by(Region.Name) %>% 
+      summarise("Year 1" = sum(n1), "Year 2"= sum(n2), 
+                "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt() 
+    
+    succbar= bardata %>% ggplot() + geom_bar(aes(x = Region.Name, y = value, fill = variable ), 
+                                             stat = "identity", position = 'fill') + theme_classic() +
+      scale_fill_brewer(palette = "Paired") + labs(x = "Region", 
+                                                   y = "Success/Failure")
+    
+    
+    ggplotly(succbar) %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4))
+    
+  })
+  
+})
   

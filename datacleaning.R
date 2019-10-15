@@ -1,10 +1,12 @@
+#READ IN IMF DATA AND UN REGION LOOKUP
+
 descriptionraw = read.csv('./description.csv', stringsAsFactors = F)
 
 regionlookup = read.csv('./UNSD — Methodology.csv', stringsAsFactors = FALSE)
 
 
 
-
+#CLEAN UP REGION LOOKUP, READING AS CSV REMOVES LEADING ZEROS THAT WE NEED 
 regionlookup = regionlookup %>% select(Region.Code, Region.Name, Country.or.Area) %>% 
   mutate(Region.Code = case_when(Region.Code == 2 ~ '002',
                                  Region.Code== 19 ~ '019', 
@@ -16,7 +18,7 @@ regionlookup = regionlookup %>% select(Region.Code, Region.Name, Country.or.Area
   rename('Country.Name' = Country.or.Area) %>% mutate(Country.Name = toupper(Country.Name))
 
 
-
+#CLEAN IMF DATA
 descriptions = descriptionraw %>%
   select(Arrangement.Number,Country.Name,Country.Code, Arrangement.Type,Approval.Date, 
          Approval.Year,  Initial.End.date,Initial.End.Year, Board.Action.Date,Program.Type,
@@ -36,13 +38,17 @@ descriptions = descriptionraw %>%
          Country.Name = trimws(str_to_title(Country.Name)), 
          Country.Name = toupper(Country.Name))
 
+
+#JOIN IMF DATA WITH REGION LOOKUP
 descriptions = left_join(descriptions, regionlookup, by="Country.Name")
 
+
+#WRITE IMF DATA TO CSV 
 write.csv(descriptions, "./descriptions_clean.csv")
 
 
 
-##############BALANCE OF PAYMENTS DATA FROM WORLD BANK#####################
+#BALANCE OF PAYMENTS DATA FROM WORLD BANK
 cab = read.csv('./cab.csv', stringsAsFactors = FALSE)
 cab = cab %>% select(Country.Name, Country.Code, contains('X'))
 colnames(cab) = gsub(pattern = 'X', replacement = "", colnames(cab))
@@ -58,25 +64,4 @@ cab = cab %>%
 
 write.csv(cab, "./cab_clean.csv")
 
-#########
-
-
-cab %>% 
-  filter(Country.Name %in% c("Algeria", "Egypt")) %>%  
-  ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
-  geom_line()
-
-
-
-
-cab %>% filter(Country.Name %in% c("AFGHANISTAN", "EGYPT")) %>%
-  ggplot(aes(x = year, y = bop, group = Country.Name, color = Country.Name)) + 
-  geom_line() +
-  labs(x = "Year", y = "BoP (% of GDP)") +
-  theme_classic() +
-  geom_vline(xintercept = unlist(arrbycountry2 %>% 
-             filter(Country.Name %in% c("AFGHANISTAN", "EGYPT")) %>% select(Inipgmyr))
-               )
-
-ggplotly(e, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
 
