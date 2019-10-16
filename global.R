@@ -31,10 +31,11 @@ arrangementsbytype = descriptions %>%
 totarrangements = arrangementsbytype %>%
   group_by(Approval.Year, arrTypeGroup) %>% summarise(tot = sum(tot),
                                                       totalaccessamount = sum(totalaccessamount))
-# grabycountry = descriptions %>%
-#   select(Country.Name, Approval.Date, Approval.Year, Inipgmyr, arrTypeGroup, Totalaccess,
-#          Arrangement.Type, Initial.End.Year) %>%
-# 
+grabycountry = descriptions %>% 
+  select(Country.Name, Approval.Date, Approval.Year, Inipgmyr, arrTypeGroup, Totalaccess, 
+         Arrangement.Type, Initial.End.Year, Region.Code, Region.Name) %>% 
+  filter(arrTypeGroup == "General Resources Account (GRA)" |
+           arrTypeGroup == "Poverty Reduction and Growth Trust (PRGT)" )
 
 
 arrbycountry = descriptions %>% 
@@ -55,11 +56,7 @@ byregion = descriptions %>%
   group_by(Region.Name, Region.Code, Country.Name, arrTypeGroup, Arrangement.Type, Totalaccess, Inipgmyr) %>% 
   summarise(n = n())
 
-grabycountry = descriptions %>% 
-  select(Country.Name, Approval.Date, Approval.Year, Inipgmyr, arrTypeGroup, Totalaccess, 
-         Arrangement.Type, Initial.End.Year, Region.Code, Region.Name) %>% 
-  filter(arrTypeGroup == "General Resources Account (GRA)" |
-           arrTypeGroup == "Poverty Reduction and Growth Trust (PRGT)" )
+
 
 
 #BOP DATA WITH YOY CALCULATIONS
