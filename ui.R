@@ -76,6 +76,20 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                  label = h4("Variable"),
                  choices = c("Number of loans" = "Number of Loans",
                              "Total access amount" = "Access Amount mnSDR")
+               ),
+               checkboxGroupInput(
+                 inputId = 'wmaparrtype',
+                 label = h4("Arrangement Type"),
+                 choices = c("Poverty Reduction and Growth Trust (PRGT)", "General Resources Account (GRA)",
+                             "Policy Support Instrument (PSI) (non-monetary)" = "Policy Support Instrument (PSI)",
+                             "Policy Coordination Instrument (PCI) (non-monetary)" = 
+                               "Policy Coordination Instrument (PCI)"),
+                 selected = c(
+                   "Poverty Reduction and Growth Trust (PRGT)",
+                   "General Resources Account (GRA)",
+                   "Policy Support Instrument (PSI)",
+                   "Policy Coordination Instrument (PCI)"
+                 )
                )
              ),
              mainPanel(htmlOutput("worldmap")))),
@@ -84,7 +98,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                tabPanel("Region Maps", 
                  "Loans by Region",
                  sidebarPanel(
-                   radioButtons(
+                   selectInput(
                      inputId = "region",
                      label = h4("Region"),
                      choices = c(
@@ -95,7 +109,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                        "Africa" = '002',
                        "Oceania" = '009'
                      ),
-                     selected = c('005')
+                      selected = "002"
                    ),
                    radioButtons(
                      inputId = 'vartype2',
@@ -103,12 +117,23 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                      choices = c("Number of loans" = "Number of Loans",
                                  "Total access amount" = "Access Amount mnSDR")
                    )
+                   # checkboxGroupInput(
+                   #   inputId = 'rmaparrtype',
+                   #   label = h4("Arrangement Type"),
+                   #   choices = unique(grabycountry$arrTypeGroup),
+                   #   # selected = c(
+                   #   #   "Poverty Reduction and Growth Trust (PRGT)",
+                   #   #   "General Resources Account (GRA)",
+                   #   #   "Policy Support Instrument (PSI)",
+                   #   #   "Policy Coordination Instrument (PCI)"
+                   #   # )
+                   # )
                  ),
                  mainPanel(htmlOutput("regionmap"))
                ),
               
            
-           tabPanel("GRA Loans", fluidPage(
+           tabPanel("PRGF & GRA Loans", fluidPage(
              sidebarPanel(
                sliderInput(
                  inputId = 'totalccesslider',
@@ -118,33 +143,29 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                
                checkboxGroupInput(
                  inputId = "scatarrtype",
-                 label = h4("GRA Arrangement Type"),
-                 choices = c("Extended Fund Facility (EFF)" = "EFF", 
-                             "Stand-By Arrangement (SBA)" = "SBA", 
-                             "Flexible Credit Line (FCL)" = "FCL", 
-                             "Exogenous Shock Facility (ESF)" = "ESF", 
-                             "SBA - Stand-By Credit Facility (SBA-SCF)" = "SBA-SCF",
-                             "SBA - Exogenous Shock Facility (SBA-ESF)" = "SBA-ESF",
-                             "Precautionary and Liquidity Line (PLL)" = "PLL", 
-                             "Precautionary Credit Line (PCL)" = "PCL"),
-                 selected = unique(grabycountry$Arrangement.Type)
+                 label = h4("Arrangement Type"),
+                 choices = c("Poverty Reduction and Growth Trust (PRGT)",
+                              "General Resources Account (GRA)",
+                              "Policy Support Instrument (PSI)",
+                              "Policy Coordination Instrument (PCI)"),
+                 selected = unique(grabycountry$arrTypeGroup)
                  )
                  ),
              mainPanel(plotlyOutput("scat1"), br(), br(), br(), plotlyOutput("scat2")))),
            
-           tabPanel("Balance of Payments and GRA Loans", fluidPage(
+           tabPanel("Balance of Payments and Loans", fluidPage(
              sidebarPanel(
                selectInput(
                  inputId = 'countrybop',
                  label = h4("Select countries"),
-                choices = c(unique(grabycountry$Country.Name)),
+                choices = c(unique(cabgra$Country.Name)),
                selected = "COLOMBIA"
                 # multiple = TRUE
                ),
                checkboxGroupInput(
                  inputId = "arrtypebop",
                  label = h4("Arrangement type"),
-                choices = unique(grabycountry %>% select(Arrangement.Type))
+                choices = unique(grabycountry %>% select(arrTypeGroup))
                  # multiple = TRUE
              )),
              mainPanel(plotlyOutput("bop"),
@@ -170,9 +191,15 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
              ),
              checkboxGroupInput(
                inputId = "gratype",
-               label = h4("GRA type"),
-               choices = c("EFF","SBA", "FCL", "ESF", "SBA-SCF","SBA-ESF","PLL", "PCL"),
-               selected = c("EFF","SBA", "FCL", "ESF", "SBA-SCF","SBA-ESF","PLL", "PCL"))
+               label = h4("Arrangement type"),
+               choices = unique(grabycountry$arrTypeGroup),
+               selected = unique(grabycountry$arrTypeGroup)),
+             radioButtons(
+               inputId = "stackfillbop",
+               label = h4("Bar type"),
+               choices = c("stack", "fill"),
+               selected = "stack"
+             )
              ),
              mainPanel(plotlyOutput("successbar1"), br(), br(), br(), plotlyOutput("successbar2")) 
              ))

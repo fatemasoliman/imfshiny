@@ -11,7 +11,7 @@ shinyServer(function(input, output, session) {
   
     observe({
       
-    arrtypebop = grabycountry %>% filter(Country.Name == input$countrybop) %>% select(Arrangement.Type)
+    arrtypebop = grabycountry %>% filter(Country.Name == input$countrybop) %>% select(arrTypeGroup)
     
     if(length(arrtypebop)==1){
       arrtypebop = arrtypebop[[1]]
@@ -20,8 +20,37 @@ shinyServer(function(input, output, session) {
     updateCheckboxGroupInput(session = session, inputId = "arrtypebop",
                          choices = unique(arrtypebop), 
                        selected = arrtypebop)
+    
+    
+    # rmaparrtype = grabycountry %>% filter(Region.Code==input$region) %>% select(arrTypeGroup)
+    # 
+    #   if(length(rmaparrtype)==1){
+    #     rmaparrtype = rmaparrtype[[1]]
+    #   }
+    # 
+    #   updateCheckboxGroupInput(session = session, inputId = "rmaparrtype",
+    #                            choices = unique(rmaparrtype),
+    #                            selected = unique(rmaparrtype))
                       })
 
+  
+  
+  # observe({
+  #   
+  #   rmaparrtype = grabycountry %>% filter(Region.Code==input$region) %>% select(arrTypeGroup)
+  # 
+  #   if(length(rmaparrtype)==1){
+  #     rmaparrtype = rmaparrtype[[1]]
+  #   }
+  #   
+  #   updateCheckboxGroupInput(session = session2, inputId = "rmaparrtype",
+  #                            choices = unique(rmaparrtype), 
+  #                            selected = rmaparrtype)
+  # })
+  
+  
+  
+  
   
   output$totalbar <- renderPlotly({
    a =  arrangementsbytype %>%  rename("yvar" = input$graphtype) %>% 
@@ -61,19 +90,37 @@ shinyServer(function(input, output, session) {
   
 
   output$regionmap = renderGvis({
-    gvisGeoChart(descriptions %>% group_by(Country.Name, Region.Code) %>% 
-                   summarise('Access Amount mnSDR' = sum(Totalaccess), 'Number of Loans' = n()) %>% 
-                   filter('Access Amount mnSDR'>0) %>% filter(input$region == Region.Code), 
+    
+    rdf = descriptions %>% 
+      filter(Region.Code == input$region) %>% 
+      group_by(Country.Name, Region.Code) %>%
+      summarise('Access Amount mnSDR' = sum(Totalaccess), 'Number of Loans' = n())
+    
+    gvisGeoChart(rdf,
                  "Country.Name",input$vartype2,
-      options = list( region = input$region,displayMode = "regions", 
-                      width = 1000,height = 600)
+                 options = list( region = input$region,displayMode = "regions",
+                                 width = 1000,height = 600)
     )
+  
+    #   gvisGeoChart(descriptions %>% filter(arrTypeGroup %in% c(input$rmaparrtype)) %>%
+    #                group_by(Country.Name, Region.Code) %>%
+    #                summarise('Access Amount mnSDR' = sum(Totalaccess), 'Number of Loans' = n()) %>%
+    #                filter('Access Amount mnSDR'>0) %>% filter(input$region == Region.Code),
+    #              "Country.Name",input$vartype2,
+    #              options = list( region = input$region,displayMode = "regions",
+    #                              width = 1000,height = 600)
+    # )
+ 
+    
   })
   
   output$worldmap = renderGvis({
-    gvisGeoChart(descriptions %>% group_by(Country.Name) %>% 
-                   summarise("Access Amount mnSDR" = sum(Totalaccess), 'Number of Loans' = n()) %>% 
-                   filter('Access Amount mnSDR'>0), 
+    wm = descriptions %>%  filter(arrTypeGroup %in% c(input$wmaparrtype)) %>% 
+      group_by(Country.Name) %>% 
+      summarise("Access Amount mnSDR" = sum(Totalaccess), 'Number of Loans' = n()) %>% 
+      filter('Access Amount mnSDR'>0)
+             
+    gvisGeoChart(wm, 
                  "Country.Name",input$vartype3,
                  options = list( region = "world",displayMode = "regions", 
                                  width = 1000,height = 600)
@@ -84,9 +131,9 @@ shinyServer(function(input, output, session) {
 
     c =  grabycountry %>%
       filter(Totalaccess >= input$totalccesslider[1] & Totalaccess<= input$totalccesslider[2], 
-             Arrangement.Type %in% c(input$scatarrtype)) %>%
+             arrTypeGroup %in% c(input$scatarrtype)) %>%
       ggplot() +
-      geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = Arrangement.Type, 
+      geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = arrTypeGroup, 
                       text = paste(Country.Name, '<br>', "Date: ", Approval.Date))) +
       labs(x = "Approval Date", y = "Total Access Amounts (mn SDR)", color = "Arrangement Type") +
       theme_classic() + scale_color_brewer(palette = "Paired")+
@@ -104,12 +151,12 @@ shinyServer(function(input, output, session) {
 
   output$scat2 = renderPlotly({
 
-    d =  grabycountry %>% group_by(Country.Name, Arrangement.Type) %>%
+    d =  grabycountry %>% group_by(Country.Name, arrTypeGroup) %>%
       summarise(nloans = n(), totacc = sum(Totalaccess)) %>%
       filter(totacc >= input$totalccesslider[1] & totacc<= input$totalccesslider[2], 
-             Arrangement.Type %in% c(input$scatarrtype)) %>%
+             arrTypeGroup %in% c(input$scatarrtype)) %>%
       ggplot() +
-      geom_jitter(aes(x = nloans, y= totacc,color = Arrangement.Type,
+      geom_jitter(aes(x = nloans, y= totacc,color = arrTypeGroup,
                      text = paste(Country.Name))) +
       labs(x = "Number of Loans", y = "Total Access Amounts (mn SDR)") +
       theme_classic() + scale_color_brewer(palette = "Paired")
@@ -123,26 +170,26 @@ shinyServer(function(input, output, session) {
     
     yrs = unlist(grabycountry %>% 
                    filter(Country.Name %in% c(input$countrybop), 
-                          Arrangement.Type %in% c(input$arrtypebop)) %>% select(Inipgmyr))
+                          arrTypeGroup %in% c(input$arrtypebop)) %>% select(Inipgmyr))
     
     countries = unlist(grabycountry %>%
                          filter(Country.Name %in% c(input$countrybop), 
-                                Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                                arrTypeGroup %in% c(input$arrtypebop)) %>% 
                          select(Country.Name))
     
     arrtypes = unlist(grabycountry %>%
                         filter(Country.Name %in% c(input$countrybop), 
-                               Arrangement.Type %in% c(input$arrtypebop)) %>% 
-                        select(Arrangement.Type))
+                               arrTypeGroup %in% c(input$arrtypebop)) %>% 
+                        select(arrTypeGroup))
     
     tam = unlist(grabycountry %>%
                    filter(Country.Name %in% c(input$countrybop), 
-                          Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                          arrTypeGroup %in% c(input$arrtypebop)) %>% 
                    select(Totalaccess))
       
     yrs_end = unlist(grabycountry %>%
                        filter(Country.Name %in% c(input$countrybop), 
-                              Arrangement.Type %in% c(input$arrtypebop)) %>% 
+                              arrTypeGroup %in% c(input$arrtypebop)) %>% 
                        select(Initial.End.Year))
     
     vlines_start = data.frame(xint = c(yrs), grp = c(countries), at = arrtypes, xintend = c(yrs_end), tam)
@@ -182,16 +229,16 @@ shinyServer(function(input, output, session) {
   
   output$successbar1 = renderPlotly({
     bardata = success %>% filter(Region.Code %in% input$regionpie, 
-                                               Arrangement.Type %in% input$gratype) %>% 
-      group_by(Arrangement.Type) %>% 
+                                 arrTypeGroup %in% input$gratype) %>% 
+      group_by(arrTypeGroup) %>% 
       summarise("Year 1" = sum(n1), "Year 2"= sum(n2), 
                 "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt()
     
    succbar= bardata %>% ggplot() + 
-     geom_bar(aes(x = Arrangement.Type, y = value, fill = variable ), 
-              stat = "identity", position = 'fill') + theme_classic() +
+     geom_bar(aes(x = arrTypeGroup, y = value, fill = variable ), 
+              stat = "identity", position = input$stackfillbop) + theme_classic() +
      scale_fill_brewer(palette = "Paired") + 
-     labs(x = "GRA Arrangement Type", y = "Proportion")
+     labs(x = "Arrangement Type", y = "Number or Proportion of Loans")
    
     
     ggplotly(succbar) %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4))
@@ -200,20 +247,22 @@ shinyServer(function(input, output, session) {
   
   output$successbar2 = renderPlotly({
     bardata = success %>% filter(Region.Code %in% input$regionpie, 
-                                 Arrangement.Type %in% input$gratype) %>%
+                                 arrTypeGroup %in% input$gratype) %>%
       group_by(Region.Name) %>% 
       summarise("Year 1" = sum(n1), "Year 2"= sum(n2), 
                 "Year 3"= sum(n3), "No Improvement" = sum(none)) %>% melt() 
     
     succbar= bardata %>% ggplot() + geom_bar(aes(x = Region.Name, y = value, fill = variable ), 
-                                             stat = "identity", position = 'fill') + theme_classic() +
+                                             stat = "identity", position = input$stackfillbop) + theme_classic() +
       scale_fill_brewer(palette = "Paired") + labs(x = "Region", 
-                                                   y = "Proportion")
+                                                   y = "Number or Proportion of Loans")
     
     
     ggplotly(succbar) %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4))
     
   })
   
+  
+
 })
   
