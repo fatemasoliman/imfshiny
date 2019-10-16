@@ -73,10 +73,12 @@ shinyServer(function(input, output, session) {
   output$regionbar <- renderPlotly({
     r =  byregion %>% 
       filter(arrTypeGroup%in%c(input$arrtype)) %>% 
-      group_by(Region.Name, Inipgmyr) %>% 
+      group_by(Region.Name, Approval.Year) %>% 
       summarise(tot = sum(n), totalaccessamount = sum(Totalaccess)) %>% 
       group_by(Region.Name) %>% rename("yvar" = input$graphtype) %>% 
-      ggplot() +geom_bar(aes(x = Inipgmyr, y = yvar, fill = Region.Name), 
+      ggplot() +geom_bar(aes(x = Approval.Year, y = yvar, fill = Region.Name, 
+                             text = paste('Year: ', Approval.Year,
+                                          '<br>', yvar)), 
                          stat = "identity", position = (input$stackfill)) + 
       theme_classic() +
       theme(legend.position = "bottom") + scale_fill_brewer(palette = "Paired") +
@@ -133,16 +135,12 @@ shinyServer(function(input, output, session) {
       filter(Totalaccess >= input$totalccesslider[1] & Totalaccess<= input$totalccesslider[2], 
              arrTypeGroup %in% c(input$scatarrtype)) %>%
       ggplot() +
-      geom_jitter(aes(x = Approval.Date, y= Totalaccess, color = arrTypeGroup, 
-                      text = paste(Country.Name, '<br>', "Date: ", Approval.Date))) +
-      labs(x = "Approval Date", y = "Total Access Amounts (mn SDR)", color = "Arrangement Type") +
+      geom_jitter(aes(x = Approval.Year, y= Totalaccess, color = arrTypeGroup, 
+                      text = paste(Country.Name, '<br>', "Date: ", Approval.Year, 
+                                   '<br>', "Amount: ", Totalaccess))) +
+      labs(x = "Approval Year", y = "Total Access Amounts (mn SDR)", color = "Arrangement Type") +
       theme_classic() + scale_color_brewer(palette = "Paired")+
-      scale_x_discrete(breaks = c("1-Jan-00", "1-Jan-01", "1-Jan-02", "1-Jan-03", 
-                                  "1-Jan-04", "1-Jan-05", "1-Jan-06", "1-Jan-07", 
-                                  "1-Jan-08", "1-Jan-09", "1-Jan-10", 
-                                  "1-Jan-11", "1-Jan-12", "1-Jan-13", "1-Jan-14", 
-                                  "1-Jan-15", "1-Jan-16", "1-Jan-17", "1-Jan-18", "1-Jan-19"), 
-                       labels=c(2000:2019)) + theme(legend.position = "none")
+     theme(legend.position = "none")
     
     ggplotly(c, tooltip = "text")
 
@@ -157,7 +155,9 @@ shinyServer(function(input, output, session) {
              arrTypeGroup %in% c(input$scatarrtype)) %>%
       ggplot() +
       geom_jitter(aes(x = nloans, y= totacc,color = arrTypeGroup,
-                     text = paste(Country.Name))) +
+                     text = paste(Country.Name, '<br>', 
+                                  '<br>', 'Number of loans: ', nloans,
+                                    '<br>', "Amount: ", totacc))) +
       labs(x = "Number of Loans", y = "Total Access Amounts (mn SDR)") +
       theme_classic() + scale_color_brewer(palette = "Paired")
     ggplotly(d, tooltip = "text") %>%  layout(legend = list(orientation = "h", x = 0.4, y = -0.4), 

@@ -5,7 +5,7 @@ library(shiny)
 library(shinythemes)
 
 
-navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
+navbarPage(theme = shinytheme("sandstone"), "",
            tabPanel("Home", fluidPage( fluidRow( 
                     br(), br(), br(), br(),
                     column(1,""),
@@ -138,7 +138,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
                sliderInput(
                  inputId = 'totalccesslider',
                  label = h4("Total access amounts (mn SDR)"),
-                 min = 0, max = 63000, value = c(0,2000)
+                 min = 0, max = 400000, value = c(0,2000)
                ),
                
                checkboxGroupInput(
@@ -197,7 +197,7 @@ navbarPage(theme = shinytheme("sandstone"), "IMF LOAN DATA",
              radioButtons(
                inputId = "stackfillbop",
                label = h4("Bar type"),
-               choices = c("stack", "fill"),
+               choices = c("dodge", 'stack', "fill"),
                selected = "stack"
              )
              ),

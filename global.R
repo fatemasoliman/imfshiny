@@ -53,7 +53,7 @@ cabimfcountries = unique(cabimfcountries%>% select(Country.Name))
 
 #IMF DATA BY REGION
 byregion = descriptions %>% 
-  group_by(Region.Name, Region.Code, Country.Name, arrTypeGroup, Arrangement.Type, Totalaccess, Inipgmyr) %>% 
+  group_by(Region.Name, Region.Code, Country.Name, arrTypeGroup, Arrangement.Type, Totalaccess, Approval.Year) %>% 
   summarise(n = n())
 
 
